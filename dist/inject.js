@@ -1,0 +1,1 @@
+!function(){const t=document.createElement("script");t.setAttribute("type","text/javascript"),t.setAttribute("src",chrome.runtime.getURL("pageScript.js")),document.body.appendChild(t)}();
