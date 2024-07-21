@@ -87,8 +87,10 @@ function getDescription(description: string) {
   // console.log('description', doc, description);
   return (
     <>
-      <p style={{ marginTop: '8px' }}>Here is your portfolio:</p>
-      <div dangerouslySetInnerHTML={{ __html: description }}></div>
+      <div
+        style={{ marginTop: '5px' }}
+        dangerouslySetInnerHTML={{ __html: description }}
+      ></div>
     </>
   );
 }
