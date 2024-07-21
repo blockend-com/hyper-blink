@@ -219,7 +219,7 @@ export const ActionLayout = ({
             style={{ marginBottom: '2px' }}
             className="mb-0.5 text-text font-semibold text-text-primary"
           >
-            {`Buy SOL with ${coin?.symbol}`}
+            {title}
           </span>
           <span
             style={{ marginBottom: '16px' }}
