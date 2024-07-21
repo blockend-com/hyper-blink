@@ -620,6 +620,7 @@ export const ActionContainer = ({
       websiteUrl={websiteUrl}
       websiteText={websiteText}
       image={action.icon}
+      action={action}
       error={
         executionState.status !== 'success'
           ? (executionState.errorMessage ?? action.error)

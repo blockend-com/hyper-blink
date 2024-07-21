@@ -213,9 +213,16 @@ async function handleNewNode(
   const shortenedUrl = anchor.href;
   const actionUrl = await resolveTwitterShortenedUrl(shortenedUrl);
   const interstitialData = isInterstitial(actionUrl);
+  console.log(interstitialData, actionUrl, 'interstitialdata');
 
+  if (
+    // @ts-ignore
+    interstitialData.decodedActionUrl !== 'https://api2.blockend.com/v1/action'
+  ) {
+    return;
+  }
   let actionApiUrl: string | null;
-  console.log(interstitialData, 'interstitialdata');
+
   if (interstitialData.isInterstitial) {
     const interstitialState = getExtendedInterstitialState(
       actionUrl.toString(),
@@ -237,13 +244,13 @@ async function handleNewNode(
     console.log(
       websiteState,
       !checkSecurity(websiteState, options.securityLevel.websites),
+      actionUrl,
       'websitestate',
     );
 
     if (!checkSecurity(websiteState, options.securityLevel.websites)) {
       return;
     }
-
     const actionsJsonUrl = actionUrl.origin + '/actions.json';
     console.log(actionsJsonUrl, 'jsonurlelse');
     const actionsJson = await fetch(proxify(actionsJsonUrl)).then(

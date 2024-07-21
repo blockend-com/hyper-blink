@@ -95,10 +95,12 @@ export const ActionLayout = ({
   form,
   error,
   success,
+  action,
 }: LayoutProps) => {
   const [tokenData, setTokenData] = useState([]);
   const [coin, setCoin] = useState({ symbol: 'USDT' });
   const [tokenObj, setTokenObj] = useState({}); //tokenObj
+  console.log(action, 'actionlayout');
   async function fetchTokens() {
     try {
       const req = await fetch(
@@ -132,7 +134,10 @@ export const ActionLayout = ({
   console.log(coin, tokenObj, 'selectedcoin');
   return (
     <div className={clsx('blink', stylePresetClassMap[stylePreset])}>
-      <div className="mt-3 w-full cursor-default overflow-hidden rounded-2xl border border-stroke-primary bg-bg-primary shadow-action">
+      <div
+        style={{ border: '1px solid #202327' }}
+        className="mt-3 w-full cursor-default overflow-hidden rounded-2xl border border-stroke-primary bg-bg-primary shadow-action"
+      >
         {image && (
           <Linkable url={websiteUrl} className="block px-5 pt-5">
             <img
@@ -193,55 +198,71 @@ export const ActionLayout = ({
               )}
             </a>
           </div>
-          <span className="mb-0.5 text-text font-semibold text-text-primary">
+          <span
+            style={{ marginBottom: '2px' }}
+            className="mb-0.5 text-text font-semibold text-text-primary"
+          >
             {`Buy SOL with ${coin?.symbol}`}
           </span>
-          <span className="mb-4 whitespace-pre-wrap text-subtext text-text-secondary">
+          <span
+            style={{ marginBottom: '16px' }}
+            className="mb-4 whitespace-pre-wrap text-subtext text-text-secondary"
+          >
             {description}
           </span>
           {disclaimer && <div className="mb-4">{disclaimer}</div>}
-          <select
-            style={{
-              paddingTop: '10px',
-              paddingRight: '4px',
-              paddingLeft: '4px',
-              paddingBottom: '10px',
-              width: '50%',
-            }}
-            name="assets"
-            id="assets"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            value={coin?.symbol}
-            onChange={handleCoin}
-          >
-            {tokenData
-              ?.slice(0, 6)
-              .map((item: { symbol: string; image: string }, i) => (
-                <option
-                  onClick={(e) => console.log(e, 'option console')}
-                  onChange={(e) => console.log(e, 'option console')}
-                  value={item.symbol}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                    }}
+          {action._data?.selectors ? (
+            <select
+              style={{
+                paddingTop: '10px',
+                paddingRight: '4px',
+                paddingLeft: '4px',
+                paddingBottom: '10px',
+                width: '50%',
+                borderRadius: '8px',
+              }}
+              name="assets"
+              id="assets"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              value={coin?.symbol}
+              onChange={handleCoin}
+            >
+              {tokenData
+                ?.slice(0, 6)
+                .map((item: { symbol: string; image: string }, i) => (
+                  <option
+                    onClick={(e) => console.log(e, 'option console')}
+                    onChange={(e) => console.log(e, 'option console')}
+                    value={item.symbol}
                   >
-                    {item?.image ? (
-                      <img src={item.image} width={20} height={20} alt="img" />
-                    ) : (
-                      <></>
-                    )}
-                    {item.symbol}
-                  </div>
-                </option>
-              ))}
-          </select>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      {item?.image ? (
+                        <img
+                          src={item.image}
+                          width={20}
+                          height={20}
+                          alt="img"
+                        />
+                      ) : (
+                        <></>
+                      )}
+                      {item.symbol}
+                    </div>
+                  </option>
+                ))}
+            </select>
+          ) : (
+            <></>
+          )}
           <ActionContent
             form={form}
             inputs={inputs}
@@ -279,12 +300,16 @@ const ActionContent = ({
   return (
     <div className="flex flex-col gap-3">
       {buttons && buttons.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div
+          style={{ marginTop: '10px', marginBottom: '4px' }}
+          className="my-2 flex flex-wrap items-center gap-2"
+        >
           {buttons?.map((it, index) => {
             console.log(it, 'it123');
             return (
               <div
                 key={index}
+                style={{ flex: 1 }}
                 className="flex flex-grow basis-[calc(33.333%-2*4px)]"
               >
                 <ActionButton
@@ -388,6 +413,7 @@ const ActionInput = ({
 
   return (
     <div
+      style={{ border: '1px solid transparent' }}
       className={clsx(
         'flex items-center gap-2 rounded-input border border-input-stroke transition-colors focus-within:border-input-stroke-selected motion-reduce:transition-none',
         {
@@ -401,7 +427,8 @@ const ActionInput = ({
         value={value}
         disabled={disabled}
         onChange={extendedChange}
-        className="my-3 ml-4 flex-1 truncate bg-input-bg text-text-input outline-none placeholder:text-text-input-placeholder disabled:text-text-input-disabled"
+        style={{ height: '45px', borderRadius: '16px', paddingLeft: '10px' }}
+        className="my-3  flex-1 truncate bg-input-bg text-text-input outline-none placeholder:text-text-input-placeholder disabled:text-text-input-disabled"
       />
       {button && (
         <div className="my-2 mr-2">

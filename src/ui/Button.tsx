@@ -13,6 +13,11 @@ export const Button = ({
 } & PropsWithChildren) => {
   return (
     <button
+      style={{
+        background: '#1d9bf0',
+        borderRadius: '16px',
+        marginRight: '3px',
+      }}
       className={clsx(
         'flex w-full items-center justify-center text-nowrap rounded-button px-6 py-3 text-text font-semibold transition-colors motion-reduce:transition-none',
         {
