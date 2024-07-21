@@ -81,10 +81,6 @@ const Linkable = ({
     <div className={className}>{children}</div>
   );
 function getDescription(description: string) {
-  let splitDesc = description.slice(23);
-  console.log(splitDesc, 'splitdesc');
-  // var doc = new DOMParser().parseFromString(splitDesc, 'text/xml');
-  // console.log('description', doc, description);
   return (
     <>
       <div
