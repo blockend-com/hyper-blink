@@ -376,142 +376,192 @@ export const ActionContainer = ({
       // const tx = await component
       //   .post(account)
       //   .catch((e: Error) => ({ error: e.message }));
-      let payload = {
-        user: account,
-        slippingTolerance: 0.5,
-        ...params,
-        amount: Number(params?.amount || '0') * 1000000,
-      };
-      console.log(payload, 'payload');
-      function isVersionedTransaction(transaction) {
-        return transaction instanceof VersionedTransaction;
-      }
-      function convertBase58ToVersionedTransaction(base58String) {
-        // Decode the base58 string to a Uint8Array
-        const transactionBuffer = bs58.decode(base58String);
-        console.log(
-          transactionBuffer,
-          'transactionBuffer',
-          Transaction,
-          Transaction.isVersionedTransaction,
-        );
-        //   let base64 = Buffer.from(transactionBuffer).toString('base64');
-        //   console.log(base64, 'base64');
-        //   return base64;
-        // Check if the transaction is legacy or versioned
-        const isVersioned = isVersionedTransaction(transactionBuffer);
-        console.log(isVersioned, 'isVersioned');
+      console.log(
+        action?._url,
+        action?._url.includes('actions/refuel'),
+        action?._url.includes('actions/action'),
+        'isinclude',
+      );
+      if (
+        action?._url.includes('actions/refuel') ||
+        action?._url.includes('actions/action')
+      ) {
+        let payload = {
+          user: account,
+          slippingTolerance: 0.5,
+          amount: Number(params?.amount || '0') * 1000000,
+          sourceMint: params.sourceMint,
+        };
+        console.log(payload, 'payload');
+        function isVersionedTransaction(transaction) {
+          return transaction instanceof VersionedTransaction;
+        }
+        function convertBase58ToVersionedTransaction(base58String) {
+          // Decode the base58 string to a Uint8Array
+          const transactionBuffer = bs58.decode(base58String);
+          console.log(
+            transactionBuffer,
+            'transactionBuffer',
+            Transaction,
+            Transaction.isVersionedTransaction,
+          );
+          //   let base64 = Buffer.from(transactionBuffer).toString('base64');
+          //   console.log(base64, 'base64');
+          //   return base64;
+          // Check if the transaction is legacy or versioned
+          const isVersioned = isVersionedTransaction(transactionBuffer);
+          console.log(isVersioned, 'isVersioned');
 
-        let transaction;
-        if (isVersioned) {
-          //   If it's a versioned transaction, deserialize it as such
-          transaction = VersionedTransaction.deserialize(transactionBuffer);
-        } else {
-          // If it's a legacy transaction, first deserialize it as a legacy transaction
-          const legacyTransaction = Transaction.from(transactionBuffer);
-          transaction = legacyTransaction;
-          // Then convert it to a versioned transaction
-          // transaction = new VersionedTransaction(legacyTransaction.compileMessage());
-          // console.log(legacyTransaction, transaction, 'legacytxn');
+          let transaction;
+          if (isVersioned) {
+            //   If it's a versioned transaction, deserialize it as such
+            transaction = VersionedTransaction.deserialize(transactionBuffer);
+          } else {
+            // If it's a legacy transaction, first deserialize it as a legacy transaction
+            const legacyTransaction = Transaction.from(transactionBuffer);
+            transaction = legacyTransaction;
+            // Then convert it to a versioned transaction
+            // transaction = new VersionedTransaction(legacyTransaction.compileMessage());
+            // console.log(legacyTransaction, transaction, 'legacytxn');
+          }
+
+          return transaction;
+        }
+        const res = await handleSwap(payload)
+          .then((res) => res.json())
+          .catch((e: Error) => ({
+            error: e.message,
+          }));
+        const tx = res.transaction;
+        let txn = convertBase58ToVersionedTransaction(tx);
+        console.log(tx, txn, 'tx');
+
+        if (isPostRequestError(tx)) {
+          dispatch({
+            type: ExecutionType.SOFT_RESET,
+            errorMessage: tx.error,
+          });
+          return;
+        }
+        console.log(res, 'buildwhirlpool');
+        const signResult = await action.adapter.signTransaction(res, context);
+        console.log(
+          signResult.signature,
+          signResult.signature._json,
+          'sign result',
+        );
+        let accountKey = new PublicKey(account);
+        console.log(
+          txn.recentBlockhash,
+          signResult.signature.recentBlockhash,
+          'recentBlockhash',
+        );
+        // const newTxn = new Transaction(signResult.signature._json);
+        const _json = signResult.signature._json;
+        const instruction = [];
+        for (const i of _json.instructions) {
+          const keys = i.keys.map((k: any) => {
+            return {
+              pubkey: new PublicKey(k.pubkey),
+              isSigner: k.isSigner,
+              isWritable: k.isWritable,
+            };
+          });
+
+          instruction.push(
+            new TransactionInstruction({
+              programId: new PublicKey(i.programId),
+              data: Buffer.from(i.data),
+              keys,
+            }),
+          );
         }
 
-        return transaction;
-      }
-      const res = await handleSwap(payload)
-        .then((res) => res.json())
-        .catch((e: Error) => ({
-          error: e.message,
-        }));
-      const tx = res.transaction;
-      let txn = convertBase58ToVersionedTransaction(tx);
-      console.log(tx, txn, 'tx');
-
-      if (isPostRequestError(tx)) {
-        dispatch({
-          type: ExecutionType.SOFT_RESET,
-          errorMessage: tx.error,
-        });
-        return;
-      }
-      console.log(res, 'buildwhirlpool');
-      const signResult = await action.adapter.signTransaction(res, context);
-      console.log(
-        signResult.signature,
-        signResult.signature._json,
-        'sign result',
-      );
-      let accountKey = new PublicKey(account);
-      console.log(
-        txn.recentBlockhash,
-        signResult.signature.recentBlockhash,
-        'recentBlockhash',
-      );
-      // const newTxn = new Transaction(signResult.signature._json);
-      const _json = signResult.signature._json;
-      const instruction = [];
-      for (const i of _json.instructions) {
-        const keys = i.keys.map((k: any) => {
-          return {
-            pubkey: new PublicKey(k.pubkey),
-            isSigner: k.isSigner,
-            isWritable: k.isWritable,
-          };
-        });
-
-        instruction.push(
-          new TransactionInstruction({
-            programId: new PublicKey(i.programId),
-            data: Buffer.from(i.data),
-            keys,
-          }),
+        const newTxn = new Transaction();
+        newTxn.recentBlockhash = _json.recentBlockhash;
+        newTxn.feePayer = new PublicKey(_json.feePayer);
+        newTxn.add(...instruction);
+        // txn.recentBlockhash = signResult.signature.recentBlockhash;
+        console.log(newTxn, 'beforesignature');
+        newTxn.addSignature(
+          accountKey,
+          signResult.signature.signatures[1].signature,
         );
-      }
 
-      const newTxn = new Transaction();
-      newTxn.recentBlockhash = _json.recentBlockhash;
-      newTxn.feePayer = new PublicKey(_json.feePayer);
-      newTxn.add(...instruction);
-      // txn.recentBlockhash = signResult.signature.recentBlockhash;
-      console.log(newTxn, 'beforesignature');
-      newTxn.addSignature(
-        accountKey,
-        signResult.signature.signatures[1].signature,
-      );
-
-      console.log(newTxn, 'newtxn');
-      const payloadSend: { messageToken?: string; transaction: string } = {
-        messageToken: res.messageToken,
-        transaction: bs58.encode(
-          newTxn.serialize({
-            requireAllSignatures: false,
-          }),
-        ),
-      };
-      let sendWhirlpool = await fetch(
-        'https://solstation.blockend.com/api/sendWhirlpoolsSwap',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        console.log(newTxn, 'newtxn');
+        const payloadSend: { messageToken?: string; transaction: string } = {
+          messageToken: res.messageToken,
+          transaction: bs58.encode(
+            newTxn.serialize({
+              requireAllSignatures: false,
+            }),
+          ),
+        };
+        let sendWhirlpool = await fetch(
+          'https://solstation.blockend.com/api/sendWhirlpoolsSwap',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payloadSend),
           },
-          body: JSON.stringify(payloadSend),
-        },
-      );
+        );
 
-      let responseWhirlpool = await sendWhirlpool.json();
-      console.log(responseWhirlpool, 'sendWhirlpool');
-      const txnResult = responseWhirlpool.signature;
-      if (!txnResult || isSignTransactionError({ signature: txnResult })) {
-        dispatch({
-          type: ExecutionType.FINISH,
-          successMessage: responseWhirlpool.message,
-        });
-      } else {
-        await action.adapter.confirmTransaction(txnResult, context);
-        dispatch({
-          type: ExecutionType.FINISH,
-          successMessage: 'Transaction confirmed!',
-        });
+        let responseWhirlpool = await sendWhirlpool.json();
+        console.log(responseWhirlpool, 'sendWhirlpool');
+        const txnResult = responseWhirlpool.signature;
+        if (!txnResult || isSignTransactionError({ signature: txnResult })) {
+          dispatch({
+            type: ExecutionType.FINISH,
+            successMessage: responseWhirlpool.message,
+          });
+        } else {
+          await action.adapter.confirmTransaction(txnResult, context);
+          dispatch({
+            type: ExecutionType.FINISH,
+            successMessage: 'Transaction confirmed!',
+          });
+        }
+      } else if (action?._url.includes('/actions/swap')) {
+        console.log('execute swap');
+        const tx = await fetch(
+          `https://actions.dialect.to/api/jupiter/swap/${params.coinSymbol}-${params.opCoinSymbol}/${params.amount}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ account }),
+          },
+        ).catch((e: Error) => ({ error: e.message }));
+        const txBody = await tx.json();
+        console.log(txBody, 'txswap');
+        if (isPostRequestError(tx)) {
+          dispatch({
+            type: ExecutionType.SOFT_RESET,
+            errorMessage: tx.error,
+          });
+          return;
+        }
+
+        const signResult = await action.adapter.signTransaction(
+          { transaction: txBody.transaction, type: 'jup' },
+          context,
+        );
+        console.log(signResult, 'signresulswap');
+        if (!signResult || isSignTransactionError(signResult)) {
+          dispatch({ type: ExecutionType.RESET });
+        } else {
+          await action.adapter.confirmTransaction(
+            signResult.signature,
+            context,
+          );
+          dispatch({
+            type: ExecutionType.FINISH,
+            successMessage: tx.message,
+          });
+        }
       }
     } catch (e) {
       dispatch({

@@ -71,13 +71,20 @@ const walletHandlers = {
     sign: async (transaction) => {
       console.log(transaction, 'signtxn');
       const txData = transaction?.transaction?.transaction;
-      const decodedTx = Buffer.from(txData || '', 'base64');
-      //   console.log(window.solana, 'decoded');
-      const tx = convertBase58ToVersionedTransaction(txData);
-      console.log(tx, 'transactionbase58');
+      const type = transaction?.transaction?.type;
+      console.log(type, 'txntype');
+      if (type == 'jup') {
+        const decodedTx = Buffer.from(txData || '', 'base64');
+        let vTx = VersionedTransaction.deserialize(decodedTx);
+        return window.solana.signAndSendTransaction(vTx);
+      } else {
+        //   console.log(window.solana, 'decoded');
+        const tx = convertBase58ToVersionedTransaction(txData);
+        console.log(tx, 'transactionbase58');
+        return window.solana.signTransaction(tx);
+      }
       //   const tx = VersionedTransaction.deserialize(decodedTx);
       //   console.log(transaction, decodedTx, tx, window.solana, 'vrstxn');
-      return window.solana.signTransaction(tx);
     },
   },
 };
@@ -108,9 +115,14 @@ const messageHandlers = {
       connectedAddress = await walletHandlers.solana.connect();
     }
     console.log(data, 'data');
-    const response = await walletHandlers.solana.sign(data);
-    console.log(response, 'resp123');
-    return { type: 'TRANSACTION_SIGNED_SOLANA', signature: response };
+    if (data?.transaction?.type == 'jup') {
+      const { signature } = await walletHandlers.solana.sign(data);
+      return { type: 'TRANSACTION_SIGNED_SOLANA', signature };
+    } else {
+      const response = await walletHandlers.solana.sign(data);
+      console.log(response, 'resp123');
+      return { type: 'TRANSACTION_SIGNED_SOLANA', signature: response };
+    }
   },
 };
 

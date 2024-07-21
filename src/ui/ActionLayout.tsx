@@ -99,6 +99,7 @@ export const ActionLayout = ({
 }: LayoutProps) => {
   const [tokenData, setTokenData] = useState([]);
   const [coin, setCoin] = useState({ symbol: 'USDT' });
+  const [opCoin, setOpCoin] = useState({ symbol: 'SOL' });
   const [tokenObj, setTokenObj] = useState({}); //tokenObj
   console.log(action, 'actionlayout');
   async function fetchTokens() {
@@ -119,8 +120,13 @@ export const ActionLayout = ({
   useEffect(() => {
     fetchTokens();
   }, []);
-  function handleCoin(event: ChangeEvent<HTMLSelectElement>) {
-    setCoin({ symbol: event.target.value });
+  function handleCoin(event: ChangeEvent<HTMLSelectElement>, name: string) {
+    console.log(name, 'nameonchange');
+    if (name == 'output') {
+      setOpCoin((prev) => ({ ...prev, symbol: event.target.value }));
+    } else {
+      setCoin((prev) => ({ ...prev, symbol: event.target.value }));
+    }
   }
 
   useEffect(() => {
@@ -131,7 +137,7 @@ export const ActionLayout = ({
     });
     setTokenObj(tempObj);
   }, [tokenData]);
-  console.log(coin, tokenObj, 'selectedcoin');
+  console.log(coin, opCoin, tokenObj, 'selectedcoin');
   return (
     <div className={clsx('blink', stylePresetClassMap[stylePreset])}>
       <div
@@ -211,64 +217,84 @@ export const ActionLayout = ({
             {description}
           </span>
           {disclaimer && <div className="mb-4">{disclaimer}</div>}
-          {action._data?.selectors ? (
-            <select
-              style={{
-                paddingTop: '10px',
-                paddingRight: '4px',
-                paddingLeft: '4px',
-                paddingBottom: '10px',
-                width: '50%',
-                borderRadius: '8px',
-              }}
-              name="assets"
-              id="assets"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              value={coin?.symbol}
-              onChange={handleCoin}
-            >
-              {tokenData
-                ?.slice(0, 6)
-                .map((item: { symbol: string; image: string }, i) => (
-                  <option
-                    onClick={(e) => console.log(e, 'option console')}
-                    onChange={(e) => console.log(e, 'option console')}
-                    value={item.symbol}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '5px',
+              width: '100%',
+            }}
+          >
+            {action._data?.selectors ? (
+              action._data?.selectors.map((item, i) => (
+                <div key={i} style={{ width: '50%' }}>
+                  <p>{item.name}</p>
+                  <select
+                    style={{
+                      paddingTop: '10px',
+                      paddingRight: '4px',
+                      paddingLeft: '4px',
+                      paddingBottom: '10px',
+                      width: '100%',
+                      borderRadius: '8px',
+                    }}
+                    name={item.name}
+                    id={item.name}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    value={
+                      item.name == 'output' ? opCoin?.symbol : coin?.symbol
+                    }
+                    onChange={(e) => {
+                      handleCoin(e, item.name);
+                    }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px',
-                      }}
-                    >
-                      {item?.image ? (
-                        <img
-                          src={item.image}
-                          width={20}
-                          height={20}
-                          alt="img"
-                        />
-                      ) : (
-                        <></>
-                      )}
-                      {item.symbol}
-                    </div>
-                  </option>
-                ))}
-            </select>
-          ) : (
-            <></>
-          )}
+                    {item.options.map(
+                      (item: { label: string; value: string }, i) => (
+                        <option
+                          onClick={(e) => console.log(e, 'option console')}
+                          onChange={(e) => console.log(e, 'option console')}
+                          value={item.value}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            {item?.image ? (
+                              <img
+                                src={item.image}
+                                width={20}
+                                height={20}
+                                alt="img"
+                              />
+                            ) : (
+                              <></>
+                            )}
+                            {item.label}
+                          </div>
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+              ))
+            ) : (
+              <></>
+            )}
+          </div>
           <ActionContent
             form={form}
             inputs={inputs}
             buttons={buttons}
             tempObj={tokenObj}
             coin={coin}
+            opCoin={opCoin}
           />
           {success && (
             <span className="mt-4 flex justify-center text-subtext text-text-success">
@@ -292,9 +318,12 @@ const ActionContent = ({
   buttons,
   tempObj,
   coin,
+  opCoin,
 }: Pick<LayoutProps, 'form' | 'inputs' | 'buttons'>) => {
   if (form) {
-    return <ActionForm form={form} tempObj={tempObj} coin={coin} />;
+    return (
+      <ActionForm form={form} tempObj={tempObj} coin={coin} opCoin={opCoin} />
+    );
   }
 
   return (
@@ -329,10 +358,13 @@ const ActionContent = ({
                                   ? 10000
                                   : 1,
                       sourceMint: tempObj[coin.symbol]?.address,
+                      coinSymbol: coin.symbol,
+                      opCoinSymbol: opCoin?.symbol,
                     })
                   }
                   tempObj={tempObj}
                   coin={coin}
+                  opCoin={opCoin}
                 />
               </div>
             );
@@ -345,6 +377,7 @@ const ActionContent = ({
           {...input}
           tempObj={tempObj}
           coin={coin}
+          opCoin={opCoin}
         />
       ))}
     </div>
@@ -355,6 +388,7 @@ const ActionForm = ({
   form,
   tempObj,
   coin,
+  opCoin,
 }: Required<Pick<LayoutProps, 'form'>>) => {
   const [values, setValues] = useState(
     Object.fromEntries(form.inputs.map((i) => [i.name, ''])),
@@ -375,6 +409,7 @@ const ActionForm = ({
           onChange={(v) => onChange(input.name, v)}
           tempObj={tempObj}
           coin={coin}
+          opCoin={opCoin}
         />
       ))}
       <ActionButton
@@ -383,6 +418,9 @@ const ActionForm = ({
           form.button.onClick({
             ...values,
             sourceMint: tempObj[coin.symbol]?.address,
+            destMint: tempObj[opCoin.symbol]?.address,
+            coinSymbol: coin.symbol,
+            opCoinSymbol: opCoin?.symbol,
           })
         }
         disabled={form.button.disabled || disabled}
@@ -400,6 +438,7 @@ const ActionInput = ({
   required,
   coin,
   tempObj,
+  opCoin,
 }: InputProps & { onChange?: (value: string) => void }) => {
   const [value, onChange] = useState('');
 
@@ -438,6 +477,9 @@ const ActionInput = ({
               button.onClick({
                 [name]: value,
                 sourceMint: tempObj[coin.symbol]?.address,
+                destMint: tempObj[coin.symbol]?.address,
+                coinSymbol: coin.symbol,
+                opCoinSymbol: opCoin?.symbol,
               })
             }
             disabled={button.disabled || value === ''}
