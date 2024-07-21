@@ -191,7 +191,7 @@ async function handleNewNode(
   i: number,
   j: number,
 ) {
-  console.log('handlenewnode');
+  console.log('handlenewnode', config);
   const element = node as Element;
   // first quick filtration
   if (!element || element.localName !== 'div') {
@@ -217,7 +217,9 @@ async function handleNewNode(
 
   if (
     // @ts-ignore
-    !interstitialData.decodedActionUrl.startsWith('https://api2.blockend.com/v1/actions/')
+    !interstitialData.decodedActionUrl.startsWith(
+      'https://api2.blockend.com/v1/actions/',
+    )
   ) {
     return;
   }
@@ -271,8 +273,17 @@ async function handleNewNode(
   ) {
     return;
   }
-
-  const action = await Action.fetch(actionApiUrl, config);
+  console.log(actionApiUrl, 'actionapiurl');
+  let action;
+  if (actionApiUrl?.includes('/actions/portfolio')) {
+    // @ts-ignore
+    let account = await config.adapter.connect();
+    console.log(account, 'accountadaptor');
+    let url = `${actionApiUrl}?account=${account}`;
+    action = await Action.fetch(url, config);
+  } else {
+    action = await Action.fetch(actionApiUrl, config);
+  }
   console.log(action, 'actionjsonres');
   if (!action) {
     console.log(action, 'returned');

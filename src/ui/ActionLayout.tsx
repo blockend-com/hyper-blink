@@ -80,7 +80,18 @@ const Linkable = ({
   ) : (
     <div className={className}>{children}</div>
   );
-
+function getDescription(description: string) {
+  let splitDesc = description.slice(23);
+  console.log(splitDesc, 'splitdesc');
+  // var doc = new DOMParser().parseFromString(splitDesc, 'text/xml');
+  // console.log('description', doc, description);
+  return (
+    <>
+      <p style={{ marginTop: '8px' }}>Here is your portfolio:</p>
+      <div dangerouslySetInnerHTML={{ __html: splitDesc }}></div>
+    </>
+  );
+}
 export const ActionLayout = ({
   stylePreset = 'default',
   title,
@@ -214,7 +225,9 @@ export const ActionLayout = ({
             style={{ marginBottom: '16px' }}
             className="mb-4 whitespace-pre-wrap text-subtext text-text-secondary"
           >
-            {description}
+            {action._url.includes('/actions/portfolio')
+              ? getDescription(description)
+              : description}
           </span>
           {disclaimer && <div className="mb-4">{disclaimer}</div>}
           <div
