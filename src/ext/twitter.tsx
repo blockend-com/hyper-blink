@@ -217,7 +217,7 @@ async function handleNewNode(
 
   if (
     // @ts-ignore
-    interstitialData.decodedActionUrl !== 'https://api2.blockend.com/v1/action'
+    !interstitialData.decodedActionUrl.startsWith('https://api2.blockend.com/v1/actions/')
   ) {
     return;
   }
