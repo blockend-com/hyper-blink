@@ -5,6 +5,8 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
+const CopyPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 module.exports = {
   entry: {
     index: './src/index.ts',
@@ -19,7 +21,18 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
-      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
+      {
+        test: /\.*css$/,
+        exclude: path.resolve('./node_modules/'),
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: { url: false },
+          },
+          'postcss-loader',
+        ],
+      },
     ],
   },
   resolve: {
@@ -37,9 +50,18 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
     }),
+    new MiniCssExtractPlugin(),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
       ethers: ['ethers'],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve('manifest.json'),
+          to: path.resolve('dist'),
+        },
+      ],
     }),
   ],
   devServer: {

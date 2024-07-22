@@ -51,10 +51,15 @@
     --blink-border-radius-rounded-button: 0.5rem;
     --blink-border-radius-rounded-input: 0.5rem;
 
-    --blink-shadow-container: 0px 129.333px 103.467px 0px rgba(0, 0, 0, 0.07), 0px 54.032px 43.226px 0px rgba(0, 0, 0, 0.05), 0px 16.195px 12.956px 0px rgba(0, 0, 0, 0.04), 0px 8.601px 6.881px 0px rgba(0, 0, 0, 0.03), 0px 3.579px 2.863px 0px rgba(0, 0, 0, 0.02);
+    --blink-shadow-container: 0px 129.333px 103.467px 0px rgba(0, 0, 0, 0.07),
+      0px 54.032px 43.226px 0px rgba(0, 0, 0, 0.05),
+      0px 16.195px 12.956px 0px rgba(0, 0, 0, 0.04),
+      0px 8.601px 6.881px 0px rgba(0, 0, 0, 0.03),
+      0px 3.579px 2.863px 0px rgba(0, 0, 0, 0.02);
   }
 
-  .x-dark, .x-light {
+  .x-dark,
+  .x-light {
     --blink-border-radius-rounded-lg: 0.25rem;
     --blink-border-radius-rounded-xl: 0.5rem;
     --blink-border-radius-rounded-2xl: 1.125rem;
@@ -63,7 +68,7 @@
   }
 
   .x-dark {
-    --blink-bg-primary: #202327;
+    --blink-bg-primary: #000;
     --blink-button: #1d9bf0;
     --blink-button-disabled: #2f3336;
     --blink-button-hover: #3087da;
@@ -104,15 +109,16 @@
     --blink-transparent-grey: #6e767d1a;
     --blink-transparent-warning: #a966001a;
 
-    --blink-shadow-container: 0px 2px 8px 0px rgba(59, 176, 255, 0.22), 0px 1px 48px 0px rgba(29, 155, 240, 0.24);
+    --blink-shadow-container: 0px 2px 8px 0px rgba(59, 176, 255, 0.22),
+      0px 1px 48px 0px rgba(29, 155, 240, 0.24);
   }
 
   .x-light {
     --blink-bg-primary: #ffffff;
     --blink-button: #499bea;
-    --blink-button-disabled: #F0F3F4;
+    --blink-button-disabled: #f0f3f4;
     --blink-button-hover: #428cd2;
-    --blink-button-success: #00B1271a;
+    --blink-button-success: #00b1271a;
     --blink-icon-error: #f71a05;
     --blink-icon-error-hover: #ff402e;
     --blink-icon-primary: #949ca4;
@@ -149,8 +155,9 @@
     --blink-transparent-grey: #6e767d1a;
     --blink-transparent-warning: #ffbc6e1a;
 
-    --blink-shadow-container: 0px 2px 8px 0px rgba(62, 177, 255, 0.22), 0px 1px 48px 0px rgba(62, 177, 255, 0.24);
+    --blink-shadow-container: 0px 2px 8px 0px rgba(62, 177, 255, 0.22),
+      0px 1px 48px 0px rgba(62, 177, 255, 0.24);
   }
 
-  .custom {}
+  /* .custom {} */
 }

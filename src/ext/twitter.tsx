@@ -11,7 +11,6 @@ import {
 import { ActionConfig } from '../api/ActionConfig';
 import { checkSecurity, type SecurityLevel } from '../shared';
 import { ActionContainer, type StylePreset } from '../ui';
-import App from '../ui/app';
 import { noop } from '../utils/constants';
 import { isInterstitial } from '../utils/interstitial-url';
 import { proxify } from '../utils/proxify';
@@ -328,7 +327,6 @@ function createAction({
     originalUrl,
     actionRoot,
     container,
-    App,
     createRoot,
     'createaction',
   );

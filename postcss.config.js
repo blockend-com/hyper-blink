@@ -7,7 +7,7 @@ const selectorIgnoreList = [
   '.custom',
 ];
 
-export default {
+module.exports = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},

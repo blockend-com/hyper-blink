@@ -14,7 +14,6 @@ export const Button = ({
   return (
     <button
       style={{
-        background: '#1d9bf0',
         borderRadius: '16px',
         marginRight: '3px',
       }}

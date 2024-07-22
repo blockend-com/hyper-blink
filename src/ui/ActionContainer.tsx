@@ -19,6 +19,7 @@ import {
   type ExtendedActionState,
   type Parameter,
 } from '../api';
+import '../index.css';
 import { checkSecurity, type SecurityLevel } from '../shared';
 import { isInterstitial } from '../utils/interstitial-url';
 import {
